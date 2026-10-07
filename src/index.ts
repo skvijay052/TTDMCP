@@ -13,6 +13,19 @@ const httpServer = createHttpServer(async (req, res) => {
   }
 
   if (req.url?.startsWith("/mcp")) {
+    const expectedToken = process.env.MCP_ACCESS_TOKEN;
+    const auth = req.headers.authorization;
+    const providedToken = auth?.startsWith("Bearer ") ? auth.slice(7) : undefined;
+
+    if (!expectedToken || providedToken !== expectedToken) {
+      res.writeHead(401, {
+        "content-type": "application/json",
+        "www-authenticate": 'Bearer realm="ttd-mcp"'
+      });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
     await mcpNodeHandler(req, res);
     return;
   }
