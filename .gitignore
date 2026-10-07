@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+storage/browser-profile/
+storage/*.json
+screenshots/*.png
+screenshots/*.jpg
+playwright-report/
+test-results/
+.DS_Store
