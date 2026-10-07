@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: TTDMCP
+    runtime: docker
+    plan: starter
+    region: virginia
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TTD_HEADLESS
+        value: "true"
+      - key: TTD_BROWSER_PROFILE
+        value: /var/data/browser-profile
+      - key: TTD_SCREENSHOTS
+        value: /var/data/screenshots
+    disk:
+      name: ttdmcp-data
+      mountPath: /var/data
+      sizeGB: 10
