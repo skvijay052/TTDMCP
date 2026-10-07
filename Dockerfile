@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/playwright:v1.63.0-noble
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY tsconfig.json playwright.config.ts ./
 COPY src ./src
