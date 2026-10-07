@@ -5,25 +5,37 @@ import { mcpHandler } from "./mcp/server.js";
 const port = Number(process.env.PORT ?? 10000);
 const mcpNodeHandler = toNodeHandler(mcpHandler);
 
+// ChatGPT Custom MCP supports a public/no-auth connection.
+// Keep auth available as an explicit deployment setting for protected deployments.
+const requireAuth = process.env.MCP_REQUIRE_AUTH === "true";
+const expectedToken = process.env.MCP_ACCESS_TOKEN;
+
 const httpServer = createHttpServer(async (req, res) => {
   if (req.url === "/health" && req.method === "GET") {
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ status: "ok", service: "ttd-mcp" }));
+    res.end(JSON.stringify({
+      status: "ok",
+      service: "ttd-mcp",
+      mcpAuthRequired: requireAuth
+    }));
     return;
   }
 
   if (req.url?.startsWith("/mcp")) {
-    const expectedToken = process.env.MCP_ACCESS_TOKEN;
-    const auth = req.headers.authorization;
-    const providedToken = auth?.startsWith("Bearer ") ? auth.slice(7) : undefined;
+    if (requireAuth) {
+      const auth = req.headers.authorization;
+      const providedToken = auth?.startsWith("Bearer ")
+        ? auth.slice(7)
+        : undefined;
 
-    if (!expectedToken || providedToken !== expectedToken) {
-      res.writeHead(401, {
-        "content-type": "application/json",
-        "www-authenticate": 'Bearer realm="ttd-mcp"'
-      });
-      res.end(JSON.stringify({ error: "Unauthorized" }));
-      return;
+      if (!expectedToken || providedToken !== expectedToken) {
+        res.writeHead(401, {
+          "content-type": "application/json",
+          "www-authenticate": 'Bearer realm="ttd-mcp"'
+        });
+        res.end(JSON.stringify({ error: "Unauthorized" }));
+        return;
+      }
     }
 
     await mcpNodeHandler(req, res);
@@ -35,5 +47,7 @@ const httpServer = createHttpServer(async (req, res) => {
 });
 
 httpServer.listen(port, "0.0.0.0", () => {
-  console.error(`TTD MCP listening on port ${port}`);
+  console.error(
+    `TTD MCP listening on port ${port} (MCP auth required: ${requireAuth})`
+  );
 });
