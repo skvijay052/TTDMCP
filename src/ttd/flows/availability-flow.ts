@@ -17,21 +17,23 @@ export class AvailabilityFlow {
     const darshan = new DarshanPage(page);
     const inspected = await darshan.inspect();
 
-    this.state.set("BROWSER_READY", { date });
-
     const authHints = /login|sign in|otp|mobile number/i.test(inspected.bodyText);
     const captchaHint = /captcha|verify you are human/i.test(inspected.bodyText);
+    const targetDate = date ?? null;
 
     if (captchaHint || authHints) {
       this.state.set("USER_ACTION_REQUIRED", {
+        date: targetDate ?? undefined,
         message: captchaHint
-          ? "Manual CAPTCHA/security step may be required."
-          : "Manual login/OTP may be required."
+          ? "Manual CAPTCHA/security step is required before continuing."
+          : "Manual login/OTP may be required before continuing."
       });
+    } else {
+      this.state.set("BROWSER_READY", { date: targetDate ?? undefined });
     }
 
     return {
-      requestedDate: date ?? null,
+      requestedDate: targetDate,
       url: inspected.url,
       title: inspected.title,
       state: this.state.get(),
@@ -39,7 +41,14 @@ export class AvailabilityFlow {
         loginOrOtpVisible: authHints,
         captchaVisible: captchaHint
       },
-      note: "Availability extraction is intentionally conservative until current TTD selectors are verified against the live site."
+      discovery: {
+        links: inspected.links,
+        buttons: inspected.buttons,
+        inputs: inspected.inputs,
+        dateCandidates: inspected.dateCandidates,
+        slotCandidates: inspected.slotCandidates
+      },
+      note: "Discovery data is read-only. A date/slot is only selected when a visible matching control is found."
     };
   }
 }
