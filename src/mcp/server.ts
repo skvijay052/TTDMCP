@@ -49,7 +49,7 @@ export function createServer(): McpServer {
       title: "Inspect TTD darshan availability",
       description: "Open the official TTD portal and return visible discovery data for dates, slots, buttons and inputs. Read-only; it does not claim availability unless the page exposes it.",
       inputSchema: z.object({
-        date: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/).optional()
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()
       })
     },
     async ({ date }) => {
@@ -63,7 +63,7 @@ export function createServer(): McpServer {
     {
       title: "Select TTD darshan date",
       description: "Select a visible matching darshan date. Stops if manual login/OTP/CAPTCHA is required and never bypasses security controls.",
-      inputSchema: z.object({ date: z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/) })
+      inputSchema: z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) })
     },
     async ({ date }) => {
       if (blockedForManualAction()) {
