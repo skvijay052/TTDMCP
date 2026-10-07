@@ -1,5 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/server";
-import { createMcpHandler } from "@modelcontextprotocol/server";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { BrowserManager } from "../browser/browser-manager.js";
 import { BookingStateStore } from "../state/booking-state.js";
