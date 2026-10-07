@@ -16,12 +16,12 @@ export class DarshanPage extends BasePage {
   async inspect(): Promise<DarshanInspection> {
     const links = await this.page.locator("a").evaluateAll((els) =>
       els.slice(0, 100).map((el) => ({
-        text: (el.textContent ?? "").trim().replace(/\\s+/g, " ").slice(0, 160),
+        text: (el.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 160),
         href: (el as HTMLAnchorElement).href
       })).filter((x) => x.text || x.href)
     );
     const buttons = await this.page.locator("button, [role=button]").evaluateAll((els) =>
-      els.slice(0, 100).map((el) => (el.textContent ?? "").trim().replace(/\\s+/g, " ").slice(0, 160)).filter(Boolean)
+      els.slice(0, 100).map((el) => (el.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 160)).filter(Boolean)
     );
     const inputs = await this.page.locator("input, select").evaluateAll((els) =>
       els.slice(0, 100).map((el) => {
@@ -36,10 +36,10 @@ export class DarshanPage extends BasePage {
     );
     const bodyText = await this.text();
     const dateCandidates = Array.from(new Set(
-      (bodyText.match(/\\b(?:20\\d{2}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}[-/]\\d{1,2}[-/]20\\d{2}|\\d{1,2}[- ](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[- ]20\\d{2})\\b/gi) ?? [])
+      (bodyText.match(/\b(?:20\d{2}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]20\d{2}|\d{1,2}[- ](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[- ]20\d{2})\b/gi) ?? [])
     )).slice(0, 50);
     const slotCandidates = Array.from(new Set(
-      (bodyText.match(/\\b(?:[01]?\\d|2[0-3])[:.]\\d{2}\\s*(?:AM|PM)?\\b/gi) ?? [])
+      (bodyText.match(/\b(?:[01]?\d|2[0-3])[:.]\d{2}\s*(?:AM|PM)?\b/gi) ?? [])
     )).slice(0, 50);
 
     return {
