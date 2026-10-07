@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/server";
-import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import { createMcpHandler } from "@modelcontextprotocol/server";
 import * as z from "zod/v4";
 import { BrowserManager } from "../browser/browser-manager.js";
 import { BookingStateStore } from "../state/booking-state.js";
@@ -50,6 +50,4 @@ export function createServer(): McpServer {
   return server;
 }
 
-export async function startMcpServer(): Promise<void> {
-  await serveStdio(() => createServer());
-}
+export const mcpHandler = createMcpHandler(() => createServer());
