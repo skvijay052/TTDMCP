@@ -15,6 +15,7 @@ export class BrowserManager {
     await mkdir(SCREENSHOTS, { recursive: true });
     this.context = await chromium.launchPersistentContext(path.resolve(PROFILE), {
       headless: process.env.TTD_HEADLESS === "true",
+      args: process.env.TTD_HEADLESS === "true" ? [] : ["--no-sandbox"],
       viewport: { width: 1440, height: 900 }
     });
     return this.context;
