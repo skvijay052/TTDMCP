@@ -6,8 +6,10 @@ set -eu
 if [ -z "${BROWSER_ACCESS_TOKEN:-}" ]; then
   BROWSER_ACCESS_TOKEN="$(openssl rand -hex 32)"
   export BROWSER_ACCESS_TOKEN
-  echo "BROWSER_ACCESS_TOKEN was generated at startup."
-  echo "Use the generated token from the Render service environment for browser access."
+  echo "BROWSER_ACCESS_TOKEN was generated at startup:"
+  echo "$BROWSER_ACCESS_TOKEN"
+  echo "Browser URL:"
+  echo "https://ttdmcp.onrender.com/browser/vnc.html?autoconnect=true&resize=scale&path=websockify&token=$BROWSER_ACCESS_TOKEN"
 fi
 
 rm -f /tmp/.X99-lock || true
