@@ -16,8 +16,6 @@ services:
         value: /var/data/browser-profile
       - key: TTD_SCREENSHOTS
         value: /var/data/screenshots
-      - key: PUBLIC_BASE_URL
-        value: https://ttdmcp.onrender.com
     disk:
       name: ttdmcp-data
       mountPath: /var/data
