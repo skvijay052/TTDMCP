@@ -21,14 +21,6 @@ const httpServer = createHttpServer(async (req, res) => {
     return;
   }
 
-  if (req.url === "/browser-info" && req.method === "GET") {
-    const token = process.env.BROWSER_ACCESS_TOKEN;
-    if (!token) { res.writeHead(503, { "content-type": "application/json" }); res.end(JSON.stringify({ ok: false, message: "BROWSER_ACCESS_TOKEN is not configured." })); return; }
-    res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: true, browserUrl: `/browser/vnc.html?autoconnect=true&resize=scale&path=websockify&token=${encodeURIComponent(token)}` }));
-    return;
-  }
-
   if (req.url?.startsWith("/mcp")) {
     if (requireAuth) {
       const auth = req.headers.authorization;
