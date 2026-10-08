@@ -40,8 +40,12 @@ export function createServer(): McpServer {
     },
     async () => {
       const handoff = loginHandoff.create();
+      const baseUrl = process.env.PUBLIC_BASE_URL ?? "";
+      const handoffUrl = baseUrl
+        ? new URL(`/human-login?token=${handoff.token}`, baseUrl).toString()
+        : `/human-login?token=${handoff.token}`;
       return {
-        content: [{ type: "text", text: JSON.stringify({ ok: true, handoffUrl: `/human-login?token=${handoff.token}`, expiresAt: new Date(handoff.expiresAt).toISOString(), message: handoff.message }, null, 2) }]
+        content: [{ type: "text", text: JSON.stringify({ ok: true, handoffUrl, expiresAt: new Date(handoff.expiresAt).toISOString(), message: handoff.message }, null, 2) }]
       };
     }
   );
