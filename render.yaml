@@ -11,7 +11,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: TTD_HEADLESS
-        value: "true"
+        value: "false"
+      - key: BROWSER_ACCESS_TOKEN
+        sync: false
       - key: TTD_BROWSER_PROFILE
         value: /var/data/browser-profile
       - key: TTD_SCREENSHOTS
