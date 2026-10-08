@@ -12,7 +12,7 @@ COPY profiles ./profiles
 RUN npm run build
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends xvfb x11vnc novnc websockify nginx gettext-base \
+  && apt-get install -y --no-install-recommends openssl xvfb x11vnc novnc websockify nginx gettext-base \
   && rm -rf /var/lib/apt/lists/*
 
 COPY docker/start.sh /usr/local/bin/start-ttdmcp
