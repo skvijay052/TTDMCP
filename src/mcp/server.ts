@@ -5,6 +5,7 @@ import { BookingStateStore } from "../state/booking-state.js";
 import { AvailabilityFlow } from "../ttd/flows/availability-flow.js";
 import { TtdClient } from "../ttd/client.js";
 import { DarshanPage } from "../ttd/pages/darshan.page.js";
+import { debugPage } from "./tools/debug-page.js";
 
 const browser = new BrowserManager();
 const state = new BookingStateStore();
@@ -25,7 +26,7 @@ function blockedForManualAction() {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "ttd-mcp",
-    version: "0.2.1"
+    version: "0.2.2"
   });
 
   server.registerTool(
@@ -55,6 +56,22 @@ export function createServer(): McpServer {
     async ({ date }) => {
       const result = await availability.check(date);
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  server.registerTool(
+    "ttd_debug_page",
+    {
+      title: "Debug TTD page",
+      description: "Read-only diagnostics for the current TTD page, including DOM counts, frames, resource failures, console errors, page errors, and a screenshot path. It does not select dates, slots, tickets, or perform booking actions.",
+      inputSchema: z.object({})
+    },
+    async () => {
+      const page = await browser.openHome();
+      const result = await debugPage(page, (name) => browser.screenshot(name));
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+      };
     }
   );
 
