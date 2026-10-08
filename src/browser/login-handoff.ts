@@ -176,7 +176,7 @@ export function renderLoginPage(handoff: Handoff): string {
   const inputType = action === "phone" ? "tel" : "text";
   const placeholder = action === "phone" ? "10-digit mobile number" : "Enter OTP";
   const maxLength = action === "phone" ? 10 : 8;
-  const endpoint = action === "phone" ? "/human-login/phone" : "/human-login/otp";
+  const endpoint = action === "phone" ? `/human-login/phone?token=${encodeURIComponent(handoff.token)}` : `/human-login/otp?token=${encodeURIComponent(handoff.token)}`;
 
   return `<!doctype html>
 <html><head><meta name="viewport" content="width=device-width,initial-scale=1">
