@@ -1,7 +1,14 @@
 #!/bin/sh
 set -eu
 
-: "${BROWSER_ACCESS_TOKEN:?BROWSER_ACCESS_TOKEN must be set in Render}"
+# Render Blueprint updates do not always inject newly-added generated secrets
+# into an existing service. Generate a token at runtime when none is provided.
+if [ -z "${BROWSER_ACCESS_TOKEN:-}" ]; then
+  BROWSER_ACCESS_TOKEN="$(openssl rand -hex 32)"
+  export BROWSER_ACCESS_TOKEN
+  echo "BROWSER_ACCESS_TOKEN was generated at startup."
+  echo "Use the generated token from the Render service environment for browser access."
+fi
 
 rm -f /tmp/.X99-lock || true
 Xvfb :99 -screen 0 1440x900x24 -ac >/var/log/xvfb.log 2>&1 &
