@@ -46,16 +46,26 @@ export class LoginHandoff {
 
   async submitPhone(token: string, phone: string): Promise<Handoff> {
     const handoff = this.require(token);
-    if (!/^\\d{10}$/.test(phone)) {
+    if (!/^\d{10}$/.test(phone)) {
       throw new Error("Enter a valid 10-digit mobile number.");
     }
 
     const page = await this.browser.openHome();
-    const inputs = page.locator(
+    let inputs = page.locator(
       'input[type="tel"], input[name*="mobile" i], input[placeholder*="mobile" i], input[name*="phone" i], input[placeholder*="phone" i]'
     );
 
-    const count = await inputs.count();
+    let count = await inputs.count();
+    if (count === 0) {
+      const loginLink = page.getByText("Log In", { exact: true }).first();
+      if (await loginLink.isVisible().catch(() => false)) {
+        await loginLink.click();
+        await page.waitForTimeout(1000);
+      }
+      inputs = page.locator('input[type="tel"], input[name*="mobile" i], input[placeholder*="mobile" i], input[name*="phone" i], input[placeholder*="phone" i]');
+      count = await inputs.count();
+    }
+
     let filled = false;
     for (let i = 0; i < count; i++) {
       const input = inputs.nth(i);
@@ -92,7 +102,7 @@ export class LoginHandoff {
 
   async submitOtp(token: string, otp: string): Promise<Handoff> {
     const handoff = this.require(token);
-    if (!/^\\d{4,8}$/.test(otp)) {
+    if (!/^\d{4,8}$/.test(otp)) {
       throw new Error("Enter the numeric OTP shown on your phone.");
     }
 
