@@ -1,6 +1,6 @@
 import { createServer as createHttpServer } from "node:http";
 import { toNodeHandler } from "@modelcontextprotocol/node";
-import { browser, loginHandoff, mcpHandler } from "./mcp/server.js";
+import { loginHandoff, mcpHandler } from "./mcp/server.js";
 import { renderLoginPage } from "./browser/login-handoff.js";
 
 const port = Number(process.env.PORT ?? 10000);
