@@ -6,10 +6,12 @@ import { AvailabilityFlow } from "../ttd/flows/availability-flow.js";
 import { TtdClient } from "../ttd/client.js";
 import { DarshanPage } from "../ttd/pages/darshan.page.js";
 import { debugPage } from "./tools/debug-page.js";
+import { LoginHandoff } from "../browser/login-handoff.js";
 
-const browser = new BrowserManager();
-const state = new BookingStateStore();
+export const browser = new BrowserManager();
+export const state = new BookingStateStore();
 const availability = new AvailabilityFlow(browser, state);
+export const loginHandoff = new LoginHandoff(browser, state);
 
 async function prepareDarshanPage() {
   const page = await browser.openHome();
@@ -28,6 +30,21 @@ export function createServer(): McpServer {
     name: "ttd-mcp",
     version: "0.2.2"
   });
+
+  server.registerTool(
+    "ttd_start_login",
+    {
+      title: "Start TTD mobile login",
+      description: "Open the TTD login session and return a temporary mobile handoff URL where the user can enter their mobile number and OTP. The MCP never stores the phone number or OTP and does not bypass CAPTCHA or other security controls.",
+      inputSchema: z.object({})
+    },
+    async () => {
+      const handoff = loginHandoff.create();
+      return {
+        content: [{ type: "text", text: JSON.stringify({ ok: true, handoffUrl: `/human-login?token=${handoff.token}`, expiresAt: new Date(handoff.expiresAt).toISOString(), message: handoff.message }, null, 2) }]
+      };
+    }
+  );
 
   server.registerTool(
     "ttd_get_status",
