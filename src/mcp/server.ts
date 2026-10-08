@@ -6,12 +6,10 @@ import { AvailabilityFlow } from "../ttd/flows/availability-flow.js";
 import { TtdClient } from "../ttd/client.js";
 import { DarshanPage } from "../ttd/pages/darshan.page.js";
 import { debugPage } from "./tools/debug-page.js";
-import { LoginHandoff } from "../browser/login-handoff.js";
 
 export const browser = new BrowserManager();
 export const state = new BookingStateStore();
 const availability = new AvailabilityFlow(browser, state);
-export const loginHandoff = new LoginHandoff(browser, state);
 
 async function prepareDarshanPage() {
   const page = await browser.openHome();
@@ -28,24 +26,36 @@ function blockedForManualAction() {
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "ttd-mcp",
-    version: "0.2.3"
+    version: "0.2.4"
   });
 
   server.registerTool(
-    "ttd_start_login",
+    "ttd_check_login",
     {
-      title: "Start TTD mobile login",
-      description: "Open the TTD login session and return a temporary mobile handoff URL where the user can enter their mobile number and OTP. The MCP never stores the phone number or OTP and does not bypass CAPTCHA or other security controls.",
+      title: "Check TTD login status",
+      description: "Read-only check of the current Playwright TTD session. If the session is not authenticated, return a clear warning telling the user to log in to TTD in the connected browser before booking. Never requests or stores OTP credentials.",
       inputSchema: z.object({})
     },
     async () => {
-      const handoff = loginHandoff.create();
-      const baseUrl = process.env.PUBLIC_BASE_URL ?? "";
-      const handoffUrl = baseUrl
-        ? new URL(`/human-login?token=${handoff.token}`, baseUrl).toString()
-        : `/human-login?token=${handoff.token}`;
+      const page = await browser.openHome();
+      const url = page.url();
+      const body = (await page.locator("body").innerText().catch(() => "")).replace(/\\s+/g, " ").trim();
+      const loginVisible = await page.getByText("Log In", { exact: true }).first().isVisible().catch(() => false);
+      const authenticated = !loginVisible && (/dashboard|logout|profile|pilgrim/i.test(url + " " + body));
+      const next = authenticated
+        ? state.set("AUTHENTICATED", { message: "TTD session appears authenticated." })
+        : state.set("USER_ACTION_REQUIRED", { message: "Please log in to TTD in the connected Chrome browser using your mobile number and OTP, then check again." });
       return {
-        content: [{ type: "text", text: JSON.stringify({ ok: true, handoffUrl, expiresAt: new Date(handoff.expiresAt).toISOString(), message: handoff.message }, null, 2) }]
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            ok: authenticated,
+            authenticated,
+            warning: authenticated ? null : "⚠️ TTD login required. Please log in to TTD in the connected Chrome browser using your mobile number and OTP, then ask ChatGPT to check TTD login again.",
+            url,
+            state: next
+          }, null, 2)
+        }]
       };
     }
   );
