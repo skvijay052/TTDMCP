@@ -1,0 +1,38 @@
+events {}
+
+http {
+  server {
+    listen 10000;
+    server_name _;
+
+    location = /health {
+      proxy_pass http://127.0.0.1:10001/health;
+    }
+
+    location /mcp {
+      proxy_pass http://127.0.0.1:10001;
+      proxy_http_version 1.1;
+      proxy_buffering off;
+    }
+
+    location = /browser {
+      return 301 /browser/;
+    }
+
+    location /browser/ {
+      if ($arg_token != ${BROWSER_ACCESS_TOKEN}) { return 403; }
+      alias /usr/share/novnc/;
+      index vnc.html;
+    }
+
+    location /websockify {
+      if ($arg_token != ${BROWSER_ACCESS_TOKEN}) { return 403; }
+      proxy_pass http://127.0.0.1:6080;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_read_timeout 3600s;
+      proxy_send_timeout 3600s;
+    }
+  }
+}
