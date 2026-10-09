@@ -16,16 +16,23 @@ http {
     }
 
     location = /browser {
-      return 301 /browser/;
+      return 302 /browser/vnc.html;
+    }
+
+    # Protect the noVNC entry page with the access token, then set a cookie.
+    # Static JS/CSS/assets are requested without the query string, so they
+    # must not require the token in every asset URL.
+    location = /browser/vnc.html {
+      if ($arg_token != ${BROWSER_ACCESS_TOKEN}) { return 403; }
+      add_header Set-Cookie "ttd_browser_token=$arg_token; Path=/; HttpOnly; Secure; SameSite=Strict" always;
+      alias /usr/share/novnc/vnc.html;
     }
 
     location /browser/ {
-      if ($arg_token != ${BROWSER_ACCESS_TOKEN}) { return 403; }
-      add_header Set-Cookie "ttd_browser_token=$arg_token; Path=/; HttpOnly; Secure; SameSite=Strict" always;
       alias /usr/share/novnc/;
-      index vnc.html;
     }
 
+    # Only authenticated browser sessions may open the VNC WebSocket.
     location /websockify {
       if ($cookie_ttd_browser_token != ${BROWSER_ACCESS_TOKEN}) { return 403; }
       proxy_pass http://127.0.0.1:6080;
